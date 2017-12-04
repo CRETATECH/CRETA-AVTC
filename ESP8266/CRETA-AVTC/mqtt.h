@@ -1,6 +1,9 @@
 #ifndef MQTT_H
 #define MQTT_H
 
+/*************************************************/
+/*                  FUCTION PROTOTYPE            */
+/*************************************************/
 void callback(char* topic, byte* payload, unsigned int length);
 void mqttCreateTopic(void);
 void mqttSubscribe(void);

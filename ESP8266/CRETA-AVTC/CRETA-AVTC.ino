@@ -3,17 +3,28 @@
  *         communicate with Slave
  * @author: nghiaphung
  */
-
+ /*************************************************/
+/*                  INCLUDE                      */
+/*************************************************/
+#include "param.h"
+#include "UART.h"
+#include "state.h"
+#include "device.h"
+/*************************************************/
+/*             FUNCTION PROTOTYPE                */
+/*************************************************/
 void hwConfig (void);
-
+void mqttConfig(void);
+/*************************************************/
+/*                  MAIN FUNCTION                */
+/*************************************************/
 void setup() {
-
+  hwConfig();
 
 }
 
 void loop() {
-
-
+  stateMachine();
 }
 
 /**
@@ -22,6 +33,13 @@ void loop() {
  */
 void hwConfig (void)
 {
-  
+  UART_Init();
+  Button_Init();
+  Led_Init();
+}
+
+void mqttConfig(void)
+{
+  mqttCreateTopic();
 }
 

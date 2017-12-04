@@ -1,23 +1,40 @@
+/*************************************************/
+/*                  INCLUDE                      */
+/*************************************************/
 #include <ESP8266WiFi.h>
 #include "protocol.h"
 #include <ArduinoJson.h>
 #include "mqtt.h"
+#include "UART.h"
 
-int parseJson(String pJson);
-
+/*************************************************/
+/*                  LOCAL  VARIABLE              */
+/*************************************************/
 String gFunc;
 String gAddr;
 String gData;
+/*************************************************/
+/*             FUNCTION PROTOTYPE                */
+/*************************************************/
+int parseJson(String pJson);
+void createModBusBuffer (uint8_t* BuffOut);
+uint16_t calcuteCRC16 (uint8_t *pBuff, uint8_t pLen);
 
-void protocolDataProcess(uint8_t * dataIn, int len)
+/*************************************************/
+/*                  MAIN FUNCTION                */
+/*************************************************/
+void protocolMqttDataProcess(uint8_t * dataIn, int len)
 {
+  uint8_t modbusBuff[6];
   String dataString = "";
   for (int i = 0; i < len; i++)
   {
     dataString += dataIn[i];
   }
   if (parseJson(dataString) == 1)
-  void createModBusBuffer (uint8_t* BuffOut)
+  createModBusBuffer (modbusBuff);
+  /* NEED: stop querry data for a while to send cmd */
+  UART_SendBuffer(modbusBuff, 6);
 }
 
 

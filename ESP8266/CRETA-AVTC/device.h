@@ -1,9 +1,11 @@
-#ifndef UART_H
-#define UART_H
+#ifndef DEVICE_H
+#define DEVICE_H
 
 /*************************************************/
 /*                  FUCTION PROTOTYPE            */
 /*************************************************/
-void UART_Init (void);
-void UART_SendBuffer(uint8_t* buff, int len);
-#endif /* UART_H */
+void Button_Init (void);
+void Led_Init (void);
+bool buttonConfigCheck (void);
+
+#endif

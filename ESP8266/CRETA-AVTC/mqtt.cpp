@@ -45,7 +45,7 @@ void callback(char* topic, byte* payload, unsigned int length)
   {
     byteRecv[i] = (uint8_t)payload[i];
   }
-  protocolDataProcess(byteRecv, length);
+  protocolMqttDataProcess(byteRecv, length);
 }
 
 /**
