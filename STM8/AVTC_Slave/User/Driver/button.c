@@ -80,16 +80,20 @@ bool buttonReadPressed(uint8_t pButton) {
 uint8_t buttonReadLevel(uint8_t pButton) {
     uint16_t vPort = _buttonPort[pButton];
     uint8_t vPin = _buttonPin[pButton];
-    static uint16_t vFilter = 0;
+    static uint32_t vFilter = 0;
+    static uint32_t vTime = 0;
     static uint8_t vLastStatus[4] = {GPIO_HIGH, GPIO_HIGH, GPIO_HIGH, GPIO_HIGH};
     uint8_t reading = gpioReadPin(vPort, vPin);
     if(reading != vLastStatus[pButton]) {
-        vFilter++;
+        if((tickerMillis() - vTime) > 100) {
+            vFilter++;
+            vTime = tickerMillis();
+        }
     }
     else {
         vFilter = 0;
     }
-    if(vFilter > 0xFFF) {
+    if(vFilter > 3) {
         vFilter = 0;
         vLastStatus[pButton] = reading;
     }

@@ -14,12 +14,15 @@ void main( void )
 
     tickerInit();
     buttonInit(WATER_SENSOR);
+    gpioPinMode(GPIO_PORTD, GPIO_PIN_4, GPIO_OUTPUT);
     enableInterrupts();
     while(1) {
         debug = buttonReadLevel(WATER_SENSOR);
-        debug1 = buttonReadPressed(WATER_SENSOR);
-        if(debug1 == true) {
-            while(1);
+        if(debug == GPIO_HIGH) {
+            gpioWritePin(GPIO_PORTD, GPIO_PIN_4, GPIO_LOW);
+        }
+        else {
+            gpioWritePin(GPIO_PORTD, GPIO_PIN_4, GPIO_HIGH);
         }
     }
 }
