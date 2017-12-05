@@ -5,6 +5,7 @@
 #include <PubSubClient.h>
 #include "mqtt.h"
 #include "protocol.h"
+#include "param.h"
 /*************************************************/
 /*                  EXTERN VARIABLE              */
 /*************************************************/
@@ -17,7 +18,7 @@ const char* gMqttServer = "cretacam.ddns.net";
 /*************************************************/
 /*                  LOCAL  VARIABLE              */
 /*************************************************/
-char gClientID[25];
+char gClientID[26];
 
 /*************************************************/
 /*             FUNCTION PROTOTYPE                */
@@ -49,20 +50,20 @@ void callback(char* topic, byte* payload, unsigned int length)
 }
 
 /**
- * @brief       create topic for mqtt to sub and pub, create client ID
+ * @brief       create topic for mqtt to sub and pub, create client ID, set server
  * @param       none
  * @retval      none
  *              
  */
-void mqttCreateTopic(void)
+void mqtt_Init(void)
 {
   String _nameTopic = "AVTC" + Get_macID();
   
   String _topic = _nameTopic + "/master";
-  _topic.toCharArray(gMqttTopicIn, 25);
+  _topic.toCharArray(gMqttTopicIn, 26);
   
   _topic = _nameTopic + "/slave";
-  _topic.toCharArray(gMqttTopicOut, 24);
+  _topic.toCharArray(gMqttTopicOut, 25);
   #ifdef DEBUG
     Serial.print("\r\nDATA: topicIn: ");
     Serial.println(gMqttTopicIn);

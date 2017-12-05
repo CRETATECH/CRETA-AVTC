@@ -27,6 +27,7 @@ void UART_SendBuffer(uint8_t* buff, int len)
 
 void serialEvent(void)
 {
+  Serial.println("serialEvent");
   while (Serial.available())
   {
     uint8_t inChar = (uint8_t)Serial.read();

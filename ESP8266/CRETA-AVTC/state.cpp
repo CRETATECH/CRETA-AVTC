@@ -17,18 +17,15 @@ typedef enum {
   STATE_CONTROL = ~STATE_CONFIG,
 }fsm_t;
 
-typedef enum {
-  LED_STATUS_BLINK = 0,
-  LED_STATUS_ON ,
-  LED_STATUS_OFF,
-}led_status_t;
-
+/*************************************************/
+/*                  EXTERN VARIABLE              */
+/*************************************************/
+led_status_t gLedFlag;
 /*************************************************/
 /*                  LOCAL  VARIABLE              */
 /*************************************************/
 fsm_t gState = STATE_CONTROL;
-os_timer_t gTimer;
-led_status_t gLedFlag;
+extern led_status_t gLedFlag;
 uint32_t _time = 0;
 /*************************************************/
 /*                  FUCTION PROTOTYPE            */
@@ -89,7 +86,7 @@ void stateConfig(void)
   if(digitalRead(BUTTON_CONFIG_PIN) != LOW)
   {
   #ifdef DEBUG
-      Serial.println("\r\nDATA: Start config...");
+      Serial.println("\r\nPROCESS: Start config...");
   #endif
     WiFi.beginSmartConfig();
     while(1)

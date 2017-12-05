@@ -5,7 +5,7 @@
 /*                  FUCTION PROTOTYPE            */
 /*************************************************/
 void callback(char* topic, byte* payload, unsigned int length);
-void mqttCreateTopic(void);
+void mqtt_Init(void);
 void mqttSubscribe(void);
 int mqttConnect (void);
 int mqttConnected (void);

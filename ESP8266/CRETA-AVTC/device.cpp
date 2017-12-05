@@ -27,6 +27,22 @@ void Led_Init (void)
   pinMode(LED_WIFI_PIN, OUTPUT);
 }
 
+void Led_On (void)
+{
+  digitalWrite(LED_WIFI_PIN, LOW);
+}
+
+void Led_Off (void)
+{
+  digitalWrite(LED_WIFI_PIN, HIGH);
+}
+
+void Led_Toggle (void)
+{
+  int temp = digitalRead(LED_WIFI_PIN);
+  digitalWrite(LED_WIFI_PIN, ~temp);
+}
+
 /**
  * @brief       Button config check
  * @param       None

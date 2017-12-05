@@ -10,6 +10,8 @@
 #include "UART.h"
 #include "state.h"
 #include "device.h"
+#include "mqtt.h"
+#include "timer.h"
 /*************************************************/
 /*             FUNCTION PROTOTYPE                */
 /*************************************************/
@@ -20,7 +22,8 @@ void mqttConfig(void);
 /*************************************************/
 void setup() {
   hwConfig();
-
+  mqttConfig();
+  Timer_Init();
 }
 
 void loop() {
@@ -40,6 +43,6 @@ void hwConfig (void)
 
 void mqttConfig(void)
 {
-  mqttCreateTopic();
+  mqtt_Init();
 }
 
