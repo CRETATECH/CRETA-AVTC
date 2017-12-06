@@ -6,12 +6,14 @@
  /*************************************************/
 /*                  INCLUDE                      */
 /*************************************************/
+#include <ESP8266WiFi.h>
 #include "param.h"
 #include "UART.h"
 #include "state.h"
 #include "device.h"
 #include "mqtt.h"
 #include "timer.h"
+#include "protocol.h"
 /*************************************************/
 /*             FUNCTION PROTOTYPE                */
 /*************************************************/
@@ -20,6 +22,10 @@ void mqttConfig(void);
 /*************************************************/
 /*                  MAIN FUNCTION                */
 /*************************************************/
+
+uint8_t cac[6];
+
+
 void setup() {
   hwConfig();
   mqttConfig();
