@@ -2,6 +2,10 @@
 #include "stdlib.h"
 #include "string.h"
 
+void serialInit(void) {
+    uartInit(9600);
+}
+
 uint8_t serialGetFrame(frame_t* frame) {
     if(uartAvailable() > 5) {
         frame->addr = uartRead();
@@ -27,7 +31,7 @@ void serialClearFrame(frame_t* frame) {
     frame->addr = 0xFF;
     frame->func = 0xFF;
     frame->reg = 0xFF;
-    frame->num = 0;
+    frame->num = 0xFF;
     free(frame->data);
     frame->crc = 0;
 }

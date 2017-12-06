@@ -11,6 +11,7 @@ void taskInit(void) {
     CLK_SYSCLKConfig(CLK_PRESCALER_CPUDIV1);
     CLK_AdjustHSICalibrationValue(CLK_HSITRIMVALUE_0);
 
+    serialInit();
     tickerInit();
     enableInterrupts();
 
@@ -44,9 +45,6 @@ void taskSerialCmd() {
         for(count = 0; count < frameRx.num; count++) {
             frameTx.data[count] = regRead(frameRx.reg + count);
         }
-        serialSendFrame(&frameTx);
-        serialClearFrame(&frameTx);
-        serialClearFrame(&frameRx);
     }
     else if(frameRx.func == SERIAL_FUNC_WRITE) {
         frameTx.addr = frameRx.addr;
@@ -58,6 +56,9 @@ void taskSerialCmd() {
             frameTx.data[count] = regRead(frameRx.reg + count);
         }
     }
+    serialSendFrame(&frameTx);
+    serialClearFrame(&frameTx);
+    serialClearFrame(&frameRx);
 }
 
 void taskReg2Dev(void) {

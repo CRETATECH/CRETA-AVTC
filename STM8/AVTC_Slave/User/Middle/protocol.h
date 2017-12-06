@@ -13,6 +13,7 @@ typedef struct {
     uint16_t crc;
 } frame_t;
 
+void serialInit(void);
 uint8_t serialGetFrame(frame_t* frame);
 void serialClearFrame(frame_t* frame);
 void serialSendFrame(frame_t* frame);

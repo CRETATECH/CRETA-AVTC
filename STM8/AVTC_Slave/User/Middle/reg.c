@@ -37,9 +37,9 @@ void regWrite(uint8_t pAddr, uint8_t pData) {
     else if((pAddr & 0xF0) == 0x20) {
         REG_RW.input[pAddr & 0x0F] = pData;
     }
-    else if(pAddr == 30) {
+    else if(pAddr == 0x30) {
         REG_CONFIG.address = pData;
-        eepromWrite(REG_ADDR_EEPROM, &REG_RO.id, 1);
+        eepromWrite(REG_ADDR_EEPROM, &REG_CONFIG.address, 1);
     }
     else if(pAddr == 0xF0) {
         REG_RO.id = pData;

@@ -1,12 +1,13 @@
 #include "task.h"
+#include "ds18b20.h"
 
 void main( void )
 {
     taskInit();
-
+    ds18b20Init();
     while(1) {
-        taskDev2Reg();
-        taskSerialCmd();
+        //taskDev2Reg();
+        //taskSerialCmd();
     }
 }
 

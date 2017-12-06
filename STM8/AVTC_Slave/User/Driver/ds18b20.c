@@ -43,17 +43,16 @@ void ds18b20Init() {
     ds18b20Reset();
     ds18b20WriteByte(0xCC);
     ds18b20WriteByte(0x44);
-    uint8_t read = 0;
+    int read = 0;
     while(read == 0) {
         ds18b20SetOutput();
         ds18b20WriteLow();
-        ds18b20DelayUs(us(2));
+        ds18b20DelayUs(3);
         ds18b20SetInput();
-        ds18b20DelayUs(us(14));
-        if(ds18b20Read() == GPIO_HIGH) {
+        ds18b20DelayUs(3);
+        if(GPIO_HIGH == ds18b20Read())
             read = 1;
-        }
-        ds18b20DelayUs(us(45));
+        ds18b20DelayUs(8);
     }
 }
 
@@ -68,7 +67,7 @@ void ds18b20Reset(void) {
     ds18b20SetOutput();
     ds18b20WriteHigh();
     ds18b20WriteLow();
-    ds18b20DelayUs(us(480));
+    ds18b20DelayUs(100);
     ds18b20SetInput();
     while(GPIO_LOW != ds18b20Read());
     while(GPIO_HIGH != ds18b20Read());
@@ -76,15 +75,16 @@ void ds18b20Reset(void) {
 
 void ds18b20WriteByte(uint8_t pByte) {
     ds18b20SetOutput();
-    ds18b20WriteHigh();
     uint8_t count = 0;
     for(count = 0; count < 8; count++) {
+        ds18b20WriteHigh();
+        ds18b20DelayUs(1);
         ds18b20WriteLow();
-        ds18b20DelayUs(us(1));
+        ds18b20DelayUs(1);
         if((pByte & 0x01) == 0x01) {
             ds18b20WriteHigh();
         }
-        ds18b20DelayUs(us(60));
+        ds18b20DelayUs(8);
         pByte = pByte>>1;
     }
 }
@@ -129,7 +129,7 @@ uint8_t ds18b20Read(void) {
 }
 
 void ds18b20DelayUs(uint32_t pUs) {
-    while(pUs--) {
-        asm("nop");
+    for(; pUs > 0; pUs--) {
+        asm("NOP");
     }
 }
