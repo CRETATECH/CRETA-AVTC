@@ -20,4 +20,5 @@ void protocolMqttDataProcess(uint8_t * dataIn, int len);
 uint16_t calcuteCRC16 (uint8_t *pBuff, uint8_t pLen);
 void protocolRecvUARTdataProcess (void);
 
+
 #endif /* PROTOCOL_H */

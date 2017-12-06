@@ -9,6 +9,7 @@
 /*************************************************/
 uint8_t recvbuff[20];
 uint8_t byteCount = 0;
+
 /*************************************************/
 /*             FUNCTION PROTOTYPE                */
 /*************************************************/
@@ -26,6 +27,7 @@ void UART_SendBuffer(uint8_t* buff, int len)
   for (int i = 0; i< len; i++)
     Serial.write(buff[i]);
 }
+
 
 /**
  * @brief: check hw serial buffer, must be called regularly

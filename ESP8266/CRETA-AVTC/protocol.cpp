@@ -14,9 +14,11 @@
 String gFunc;
 String gAddr;
 String gData;
+
 int regAddr_Send;
 int timerTimeoutID;
 int timerRecvdataID;
+
 /*************************************************/
 /*             FUNCTION PROTOTYPE                */
 /*************************************************/

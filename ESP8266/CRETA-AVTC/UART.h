@@ -17,4 +17,5 @@ void UART_SendBuffer(uint8_t* buff, int len);
 void UART_Event (void);
 int UART_ModbusCheck(uint8_t* buffOut, int* len);
 void UART_ResetBuffer (void);
+
 #endif /* UART_H */

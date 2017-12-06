@@ -22,10 +22,6 @@ void mqttConfig(void);
 /*************************************************/
 /*                  MAIN FUNCTION                */
 /*************************************************/
-
-uint8_t cac[6];
-
-
 void setup() {
   hwConfig();
   mqttConfig();
