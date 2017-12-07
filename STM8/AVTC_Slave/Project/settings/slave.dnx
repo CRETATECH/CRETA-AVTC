@@ -49,7 +49,7 @@
         <MultiCoreRunAll>1</MultiCoreRunAll>
     </Simulator>
     <DebugChecksum>
-        <Checksum>2868256130</Checksum>
+        <Checksum>1551302236</Checksum>
     </DebugChecksum>
     <CallStack>
         <ShowArgs>0</ShowArgs>
@@ -57,6 +57,9 @@
     <Disassembly>
         <MixedMode>1</MixedMode>
     </Disassembly>
+    <struct_types>
+        <Fmt0>frame_t-crc	4	0</Fmt0>
+    </struct_types>
     <DataSample>
         <LogEnabled>0</LogEnabled>
         <GraphEnabled>0</GraphEnabled>
@@ -73,9 +76,7 @@
     </TermIOLog>
     <Breakpoints>
         <Bp0>_ "STD_CODE" "{$PROJ_DIR$\main.c}.34.1" 0 0 0 0 "" 0 ""</Bp0>
-        <Bp1>_ "STD_CODE" "{$PROJ_DIR$\main.c}.29.3" 1 0 0 0 "" 0 ""</Bp1>
-        <Bp2>_ "STD_CODE" "{$PROJ_DIR$\main.c}.8.5" 1 0 0 0 "" 0 ""</Bp2>
-        <Count>3</Count>
+        <Count>1</Count>
     </Breakpoints>
     <Aliases>
         <A0>_ "E:\CRETA-AVTC-serial\CRETA-AVTC-serial\STM8\AVTC_Slave\User\Driver\ds18b20.c" "D:\workspaceNew\AVTC_Slave\User\Driver\ds18b20.c"</A0>

@@ -68,15 +68,15 @@ void taskReg2Dev(void) {
 void taskDev2Reg(void) {
     //! Update water sensor
     if(GPIO_HIGH == buttonReadLevel(WATER_SENSOR)) {
-        regWrite(0x20, 0x00);
-        regWrite(0x21, 0x64);
+        regWrite(0x22, 0x00);
+        regWrite(0x23, 0x64);
     }
     else {
-        regWrite(0x20, 0x00);
-        regWrite(0x21, 0x00);
+        regWrite(0x22, 0x00);
+        regWrite(0x23, 0x00);
     }
     //! Update DS18B20
     //! Fake number
-    regWrite(0x22, 0x0C);
-    regWrite(0x23, 0xA0);
+    regWrite(0x20, 0x0A);
+    regWrite(0x21, 0x91);
 }

@@ -1,34 +1,34 @@
-"E:\CRETA-AVTC-serial\CRETA-AVTC-serial\STM8\AVTC_Slave\User\Middle\protocol.c"
+"D:\workspaceNew\AVTC_Slave\User\Middle\protocol.c"
 -std=c99
 -ferror-limit=0
 -I
-E:\CRETA-AVTC-serial\CRETA-AVTC-serial\STM8\AVTC_Slave\Project\..\StdPeriph\inc
+D:\workspaceNew\AVTC_Slave\Project\..\StdPeriph\inc
 -I
-E:\CRETA-AVTC-serial\CRETA-AVTC-serial\STM8\AVTC_Slave\Project\..\User
+D:\workspaceNew\AVTC_Slave\Project\..\User
 -I
-E:\CRETA-AVTC-serial\CRETA-AVTC-serial\STM8\AVTC_Slave\Project\..\User\Driver
+D:\workspaceNew\AVTC_Slave\Project\..\User\Driver
 -I
-E:\CRETA-AVTC-serial\CRETA-AVTC-serial\STM8\AVTC_Slave\Project\..\User\HAL
+D:\workspaceNew\AVTC_Slave\Project\..\User\HAL
 -I
-E:\CRETA-AVTC-serial\CRETA-AVTC-serial\STM8\AVTC_Slave\Project\..\User\Middle
+D:\workspaceNew\AVTC_Slave\Project\..\User\Middle
 -I
-E:\CRETA-AVTC-serial\CRETA-AVTC-serial\STM8\AVTC_Slave\Project\..\User\App
+D:\workspaceNew\AVTC_Slave\Project\..\User\App
 -I
-D:\EmbeddedSTM8\stm8\inc
+C:\Program Files (x86)\IAR Systems\Embedded Workbench 8.0\stm8\inc
 -I
-D:\EmbeddedSTM8\stm8\inc\c
+C:\Program Files (x86)\IAR Systems\Embedded Workbench 8.0\stm8\inc\c
 -I
-E:\CRETA-AVTC-serial\CRETA-AVTC-serial\STM8\AVTC_Slave\StdPeriph\inc
+D:\workspaceNew\AVTC_Slave\StdPeriph\inc
 -I
-E:\CRETA-AVTC-serial\CRETA-AVTC-serial\STM8\AVTC_Slave\User
+D:\workspaceNew\AVTC_Slave\User
 -I
-E:\CRETA-AVTC-serial\CRETA-AVTC-serial\STM8\AVTC_Slave\User\Driver
+D:\workspaceNew\AVTC_Slave\User\Driver
 -I
-E:\CRETA-AVTC-serial\CRETA-AVTC-serial\STM8\AVTC_Slave\User\HAL
+D:\workspaceNew\AVTC_Slave\User\HAL
 -I
-E:\CRETA-AVTC-serial\CRETA-AVTC-serial\STM8\AVTC_Slave\User\Middle
+D:\workspaceNew\AVTC_Slave\User\Middle
 -I
-E:\CRETA-AVTC-serial\CRETA-AVTC-serial\STM8\AVTC_Slave\User\App
+D:\workspaceNew\AVTC_Slave\User\App
 -D__CHAR_BITS__=8
 -D__CHAR_MAX__=0xff
 -D__CHAR_MIN__=0
@@ -274,8 +274,8 @@ E:\CRETA-AVTC-serial\CRETA-AVTC-serial\STM8\AVTC_Slave\User\App
 -D__EDG_ANSIC=1
 -D__EDG_CPP11_IL_EXTENSIONS_SUPPORTED=1
 -DSTM8S103=1
--D_DLIB_CONFIG_FILE_HEADER_NAME="D:\EmbeddedSTM8\stm8\LIB\dlstm8smn.h"
--D_DLIB_CONFIG_FILE_STRING="D:\\EmbeddedSTM8\\stm8\\LIB\\dlstm8smn.h"
+-D_DLIB_CONFIG_FILE_HEADER_NAME="C:\Program Files (x86)\IAR Systems\Embedded Workbench 8.0\stm8\LIB\dlstm8smn.h"
+-D_DLIB_CONFIG_FILE_STRING="C:\\Program Files (x86)\\IAR Systems\\Embedded Workbench 8.0\\stm8\\LIB\\dlstm8smn.h"
 -D__VERSION__="IAR C/C++ Compiler V3.10.1.201 for STM8"
 -D__CODE_MEMORY_LIST1__()=__CODE_MEM_HELPER1__(__code, 0 )
 -D__CODE_MEMORY_LIST2__(_P1)=__CODE_MEM_HELPER2__(__code, 0 ,  _P1 )
