@@ -33,7 +33,7 @@
 #define WATER_SENSOR_PORT   GPIO_PORTC
 #define WATER_SENSOR_PIN    GPIO_PIN_4
 
-#define DS18B20_PORT        GPIO_PORTB
-#define DS18B20_PIN         GPIO_PIN_5
+#define DS18B20_PORT        GPIO_PORTD
+#define DS18B20_PIN         GPIO_PIN_3
 
 #endif

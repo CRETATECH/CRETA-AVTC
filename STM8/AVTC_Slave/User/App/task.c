@@ -15,7 +15,7 @@ void taskInit(void) {
     tickerInit();
     enableInterrupts();
 
-    // ds18b20Init();
+    ds18b20Init();
     buttonInit(BUTTON_1);
     buttonInit(BUTTON_2);
     buttonInit(BUTTON_3);

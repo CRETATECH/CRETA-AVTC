@@ -1,13 +1,17 @@
 #include "task.h"
 #include "ds18b20.h"
 
+float t;
+
 void main( void )
 {
-    taskInit();
-
+    //taskInit();
+    gpioPinMode(DS18B20_PORT, DS18B20_PIN, GPIO_MODE_OUT_OD_LOW_FAST);
+    ds18b20Init();
     while(1) {
-        taskDev2Reg();
-        taskSerialCmd();
+        t = ds18b20ReadTemp();
+        //taskDev2Reg();
+        //taskSerialCmd();
     }
 }
 

@@ -1,135 +1,122 @@
-/*******************************************************************************
-  * @filename   : ds18b20.c
-  * @author     : HgN
-  * @last update: December 4th, 2017
-  */
-/******************************************************************************/
-
-/******************************************************************************/
-/* INCLUDE */
-/******************************************************************************/
 #include "ds18b20.h"
-#include <stdlib.h>
-#include <stdbool.h>
 
-/******************************************************************************/
-/* LOCAL TYPEDEFS */
-/******************************************************************************/
-
-/******************************************************************************/
-/* LOCAL DEFINES */
-/******************************************************************************/
-
-/******************************************************************************/
-/* PUBLIC VARIABLES */
-/******************************************************************************/
-
-/******************************************************************************/
-/* LOCAL FUNCTION PROTOTYPES */
-/******************************************************************************/
-void ds18b20Reset(void);
-void ds18b20WriteByte(uint8_t pByte);
-uint8_t ds18b20ReadByte(void);
-inline void ds18b20SetOutput(void);
-inline void ds18b20SetInput(void);
-inline void ds18b20WriteLow(void);
 inline void ds18b20WriteHigh(void);
+inline void ds18b20WriteLow(void);
 inline uint8_t ds18b20Read(void);
-inline void ds18b20DelayUs(uint32_t pUs);
-/******************************************************************************/
-/* PUBLIC FUNCTIONS */
-/******************************************************************************/
+void ds18b20Reset(void);
+inline void ds18b20Delay(uint32_t pUs);
+void ds18b20WriteBit(uint8_t bit);
+uint8_t ds18b20ReadBit(void);
+void ds18b20WriteByte(uint8_t byte);
+uint8_t ds18b20ReadByte(void);
+
+
 void ds18b20Init() {
     ds18b20Reset();
     ds18b20WriteByte(0xCC);
-    ds18b20WriteByte(0x44);
-    int read = 0;
-    while(read == 0) {
-        ds18b20SetOutput();
-        ds18b20WriteLow();
-        ds18b20DelayUs(3);
-        ds18b20SetInput();
-        ds18b20DelayUs(3);
-        if(GPIO_HIGH == ds18b20Read())
-            read = 1;
-        ds18b20DelayUs(8);
-    }
+    ds18b20WriteByte(0x4E);
+    ds18b20WriteByte(0x64);
+    ds18b20WriteByte(0x00);
+    ds18b20WriteByte(0x7F);
+    ds18b20Reset();
+    ds18b20WriteByte(0xCC);
+    ds18b20WriteByte(0xBE);
+    uint8_t temp1 = ds18b20ReadByte();
+    uint8_t temp2 = ds18b20ReadByte();
+    uint8_t temp3 = ds18b20ReadByte();
+    uint8_t temp4 = ds18b20ReadByte();
+    uint8_t temp5 = ds18b20ReadByte();
+    uint8_t temp6 = ds18b20ReadByte();
+    uint8_t temp7 = ds18b20ReadByte();
+    uint8_t temp8 = ds18b20ReadByte();
+    uint8_t temp9 = ds18b20ReadByte();
+    ds18b20Reset();
 }
 
 float ds18b20ReadTemp() {
+    ds18b20Reset();
+    ds18b20WriteByte(0xCC);
+    ds18b20WriteByte(0x44);
+    while(RESET == ds18b20ReadBit());
+    ds18b20Reset();
+    ds18b20WriteByte(0xCC);
+    ds18b20WriteByte(0xBE);
+    uint8_t temp1 = ds18b20ReadByte();
+    uint8_t temp2 = ds18b20ReadByte();
+    ds18b20Reset();
+    uint16_t temp = (uint16_t)(temp1 << 8) | (uint16_t)temp2;
+    return temp;
 }
 
-
-/******************************************************************************/
-/* PRIVATE FUNCTIONS */
-/******************************************************************************/
 void ds18b20Reset(void) {
-    ds18b20SetOutput();
-    ds18b20WriteHigh();
-    ds18b20WriteLow();
-    ds18b20DelayUs(100);
-    ds18b20SetInput();
-    while(GPIO_LOW != ds18b20Read());
-    while(GPIO_HIGH != ds18b20Read());
+    GPIOD->ODR |= (uint8_t)GPIO_PIN_3;
+    ds18b20Delay(1);
+    GPIOD->ODR &= (uint8_t)(~GPIO_PIN_3);
+    ds18b20Delay(12);
+    GPIOD->ODR |= (uint8_t)GPIO_PIN_3;
+    ds18b20Delay(1);
+    while(ds18b20Read() == GPIO_HIGH);
+    while(ds18b20Read() == GPIO_LOW);
 }
 
-void ds18b20WriteByte(uint8_t pByte) {
-    ds18b20SetOutput();
-    uint8_t count = 0;
+void ds18b20WriteByte(uint8_t byte) {
+    int count = 0;
     for(count = 0; count < 8; count++) {
-        ds18b20WriteHigh();
-        ds18b20DelayUs(1);
-        ds18b20WriteLow();
-        ds18b20DelayUs(1);
-        if((pByte & 0x01) == 0x01) {
-            ds18b20WriteHigh();
-        }
-        ds18b20DelayUs(8);
-        pByte = pByte>>1;
+        ds18b20WriteBit(byte & 0x01);
+        byte >>= 1;
     }
 }
 
 uint8_t ds18b20ReadByte(void) {
-    uint8_t count = 0;
-    uint8_t byte = 0;
-    uint32_t delay;
+    int count = 0;
+    int byte = 0;
     for(count = 0; count < 8; count++) {
-        ds18b20SetOutput();
-        ds18b20WriteLow();
-        delay = 2; while(delay--);
-        ds18b20SetInput();
-        byte = byte >> 1;
-        delay = 8; while(delay--);
-        if(GPIO_HIGH == ds18b20Read()) {
+        byte >>= 1;
+        if(ds18b20ReadBit() != RESET)
             byte |= 0x80;
-        }
-        delay = 100; while(delay--);
     }
     return byte;
 }
 
-void ds18b20SetOutput(void) {
-    gpioPinMode(DS18B20_PORT, DS18B20_PIN, GPIO_OUTPUT);
+uint8_t ds18b20ReadBit(void) {
+    uint8_t bit;
+    GPIOD->ODR &= (uint8_t)(~GPIO_PIN_3);
+    asm("NOP");
+    GPIOD->ODR |= (uint8_t)GPIO_PIN_3;
+    asm("NOP");
+    asm("NOP");
+    bit = ((BitStatus)(GPIOD->IDR & (uint8_t)GPIO_PIN_3));
+    int pUs = 3;
+    while(pUs--) asm("NOP");
+    return bit;
 }
 
-void ds18b20SetInput(void) {
-    gpioPinMode(DS18B20_PORT, DS18B20_PIN, GPIO_INPUT);
+void ds18b20WriteBit(uint8_t bit) {
+    GPIOD->ODR |= (uint8_t)GPIO_PIN_3;
+    asm("NOP");
+    GPIOD->ODR &= (uint8_t)(~GPIO_PIN_3);
+    asm("NOP");
+    if(bit != 0x00)
+        GPIOD->ODR |= (uint8_t)GPIO_PIN_3;
+    else if(bit == 0x01)
+        GPIOD->ODR &= (uint8_t)~GPIO_PIN_3;
+    int pUs = 15;
+    while(pUs--) asm("NOP");
+    GPIOD->ODR |= (uint8_t)GPIO_PIN_3;
 }
 
-void ds18b20WriteLow(void) {
-    gpioWritePin(DS18B20_PORT, DS18B20_PIN, GPIO_LOW);
+void ds18b20WriteHigh() {
+    GPIOD->ODR |= (uint8_t)GPIO_PIN_3;
 }
 
-void ds18b20WriteHigh(void) {
-    gpioWritePin(DS18B20_PORT, DS18B20_PIN, GPIO_HIGH);
+void ds18b20WriteLow() {
+    GPIOD->ODR &= (uint8_t)(~GPIO_PIN_3);
+}
+
+void ds18b20Delay(uint32_t pUs) {
+    while(pUs--) asm("NOP");
 }
 
 uint8_t ds18b20Read(void) {
-    return gpioReadPin(DS18B20_PORT, DS18B20_PIN);
-}
-
-void ds18b20DelayUs(uint32_t pUs) {
-    for(; pUs > 0; pUs--) {
-        asm("NOP");
-    }
+    return ((BitStatus)(GPIOD->IDR & (uint8_t)GPIO_PIN_3));
 }

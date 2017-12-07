@@ -23,9 +23,9 @@ param([String]$debugfile = "");
 
 if ($debugfile -eq "")
 {
-& "C:\Program Files (x86)\IAR Systems\Embedded Workbench 8.0\common\bin\cspybat" -f "D:\workspaceNew\AVTC_Slave\Project\settings\slave.Debug.general.xcl" --backend -f "D:\workspaceNew\AVTC_Slave\Project\settings\slave.Debug.driver.xcl" 
+& "C:\Program Files (x86)\IAR Systems\Embedded Workbench 8.0\common\bin\cspybat" -f "D:\workspaceNew\CRETA-AVTC\STM8\AVTC_Slave\Project\settings\slave.Debug.general.xcl" --backend -f "D:\workspaceNew\CRETA-AVTC\STM8\AVTC_Slave\Project\settings\slave.Debug.driver.xcl" 
 }
 else
 {
-& "C:\Program Files (x86)\IAR Systems\Embedded Workbench 8.0\common\bin\cspybat" -f "D:\workspaceNew\AVTC_Slave\Project\settings\slave.Debug.general.xcl" --debug_file=$debugfile --backend -f "D:\workspaceNew\AVTC_Slave\Project\settings\slave.Debug.driver.xcl" 
+& "C:\Program Files (x86)\IAR Systems\Embedded Workbench 8.0\common\bin\cspybat" -f "D:\workspaceNew\CRETA-AVTC\STM8\AVTC_Slave\Project\settings\slave.Debug.general.xcl" --debug_file=$debugfile --backend -f "D:\workspaceNew\CRETA-AVTC\STM8\AVTC_Slave\Project\settings\slave.Debug.driver.xcl" 
 }
