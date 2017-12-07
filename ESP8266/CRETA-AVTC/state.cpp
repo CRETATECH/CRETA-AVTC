@@ -9,6 +9,8 @@
 #include "param.h"
 #include "protocol.h"
 #include "mqtt.h"
+#include "UART.h"
+
 /*************************************************/
 /*                  LOCAL  SYMBOL                */
 /*************************************************/
@@ -146,6 +148,8 @@ void stateControl(void)
       }
     }
     else Wifi_Connect();
+    /* check UART hw buffer */
+    UART_Event();
 }
 
 /**

@@ -44,7 +44,7 @@ void Timer_Init (void)
 {
   os_timer_disarm(&gTimer);
   os_timer_setfn(&gTimer, (os_timer_func_t *)TimerISRHandler, NULL);
-  os_timer_arm(&gTimer, 50, 1);
+  os_timer_arm(&gTimer, 10, 1);
 }
 
 /**
@@ -55,7 +55,7 @@ void TimerISRHandler (void)
   /* Control Led */
   static char j = 0;
   j++;
-  if (j == 4)
+  if (j == 20)
   {
     if (gLedFlag == LED_STATUS_BLINK)
       Led_Toggle();
@@ -131,6 +131,7 @@ int deleteSWTimer (int id)
   {
     SWTimer[id].callback = NULL;
     SWTimer[id].param    = NULL;
+    SWTimer[id].started   = 0;
   }
 }
 

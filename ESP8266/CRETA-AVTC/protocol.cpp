@@ -14,6 +14,11 @@
 String gFunc;
 String gAddr;
 String gData;
+
+int regAddr_Send;
+int timerTimeoutID;
+int timerRecvdataID;
+
 /*************************************************/
 /*             FUNCTION PROTOTYPE                */
 /*************************************************/
@@ -22,6 +27,7 @@ void createModBusBuffer (uint8_t* BuffOut, uint8_t* buffOutLen);
 uint16_t calcuteCRC16 (uint8_t *pBuff, uint8_t pLen);
 String protocolCreateJson (String pFunc, String pAddr, String pData);
 void protocolTimeoutErrorProcess (void);
+
 /*************************************************/
 /*                  MAIN FUNCTION                */
 /*************************************************/
@@ -42,13 +48,73 @@ void protocolMqttDataProcess(uint8_t * dataIn, int len)
     #endif
     UART_SendBuffer(modbusBuff, buffLen);
     /* create sw timer to handle timeout */
-    int timerID = createSWTimer(500, protocolTimeoutErrorProcess, (void*)0);
+    timerTimeoutID = createSWTimer(2000, protocolTimeoutErrorProcess, (void*)0);
+    runSWTimer(timerTimeoutID);
+    /* create sw timer to handle uart recv data */
+    timerRecvdataID = createSWTimer(50, protocolRecvUARTdataProcess, (void*)0);
+    runSWTimer(timerRecvdataID);
+  }
+}
+
+void protocolRecvUARTdataProcess (void)
+{
+  String funcString;
+  String addrString;
+  String dataString;
+  uint16_t dataInt;
+  uint8_t recv_buff[20];
+  int len;
+  UART_Event();
+  int recv_status = UART_ModbusCheck(recv_buff, &len);
+  if (recv_status == RECV_OK)
+  {
+    deleteSWTimer(timerTimeoutID);
+    /* parse frame */
+    if (recv_buff[1] == FUNC_READ)
+      funcString = "002";
+    else if (recv_buff[1] == FUNC_WRITE)
+      funcString = "001";
+    addrString = gAddr;
+    if (recv_buff[0] == 0x01)
+    {
+      if (recv_buff[2] == 0x00)
+        dataString = "0";
+      else if (recv_buff[2] == 0x64)
+        dataString = "1";
+    }
+    else if (recv_buff[0] == 0x02)
+    {
+      if (gAddr == "0401")
+      {
+        if (recv_buff[3] == 0x00)
+          dataString = "0";
+        else if (recv_buff[3] == 0x64)
+          dataString = "1";
+      }
+      else if (gAddr = "0201")
+      {
+        dataInt = (uint16_t)(recv_buff[2]<<8) + recv_buff[3];
+        dataString = (String)(dataInt / 100);
+        dataString += ".";
+        int temp = dataInt % 100;
+        if (temp < 10)
+          dataString += "0";
+        dataString += (String)(temp);
+      }
+    }
+    mqttPublish(protocolCreateJson(funcString, gAddr, dataString));
+  }
+  else
+  {
+    int timerID = createSWTimer(50, protocolRecvUARTdataProcess, (void*)0);
     runSWTimer(timerID);
   }
 }
 
 void protocolTimeoutErrorProcess (void)
 {
+  UART_ResetBuffer();
+  deleteSWTimer(timerRecvdataID);
   mqttPublish(protocolCreateJson("003", "", "004"));
 }
 

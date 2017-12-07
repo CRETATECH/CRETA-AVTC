@@ -6,12 +6,14 @@
  /*************************************************/
 /*                  INCLUDE                      */
 /*************************************************/
+#include <ESP8266WiFi.h>
 #include "param.h"
 #include "UART.h"
 #include "state.h"
 #include "device.h"
 #include "mqtt.h"
 #include "timer.h"
+#include "protocol.h"
 /*************************************************/
 /*             FUNCTION PROTOTYPE                */
 /*************************************************/
