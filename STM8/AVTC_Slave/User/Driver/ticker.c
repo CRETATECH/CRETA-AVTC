@@ -23,7 +23,7 @@
 /******************************************************************************/
 /* PUBLIC VARIABLES */
 /******************************************************************************/
-uint32_t _millis = 0;
+volatile uint32_t _millis = 0;
 /******************************************************************************/
 /* LOCAL FUNCTION PROTOTYPES */
 /******************************************************************************/
@@ -38,7 +38,7 @@ uint32_t _millis = 0;
  *              EXIT_FAILURE
  */
 int tickerInit(void) {
-    timer2Init(0x41);
+    timer2Init(62);
     timer2IntEnable();
     return EXIT_SUCCESS;
 }
@@ -50,6 +50,16 @@ int tickerInit(void) {
  */
 uint32_t tickerMillis(void) {
     return _millis;
+}
+
+/**
+ * @brief       Delay in us
+ * @param       None
+ * @retval      None
+ */
+void tickerDelayMs(uint32_t pMsDelay) {
+    uint32_t vStart = tickerMillis();
+    while((tickerMillis() - vStart) < pMsDelay);
 }
 
 /**
