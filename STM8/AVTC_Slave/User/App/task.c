@@ -15,16 +15,20 @@ void taskInit(void) {
     tickerInit();
     enableInterrupts();
 
-    ds18b20Init();
     buttonInit(BUTTON_1);
     buttonInit(BUTTON_2);
     buttonInit(BUTTON_3);
     buttonInit(WATER_SENSOR);
 
+    gpioPinMode(DS18B20_PORT, DS18B20_PIN, GPIO_MODE_OUT_OD_LOW_FAST);
+    ds18b20Init();
+
     serialClearFrame(&frameTx);
     serialClearFrame(&frameRx);
 
     regInit();
+    //! Set sensor slave address 0x02
+    regWrite(0x30, 0x02);
 }
 
 void taskSerialCmd() {
@@ -76,7 +80,10 @@ void taskDev2Reg(void) {
         regWrite(0x23, 0x00);
     }
     //! Update DS18B20
-    //! Fake number
-    regWrite(0x20, 0x0A);
-    regWrite(0x21, 0x91);
+    float t = ds18b20ReadTemp();
+    if(200 != t) {
+        uint16_t reg_t = (uint16_t)(t * 100.0);
+        regWrite(0x20, (uint8_t)(reg_t >> 8));
+        regWrite(0x21, (uint8_t)(reg_t >> 0));
+    }
 }

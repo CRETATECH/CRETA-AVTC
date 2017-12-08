@@ -10,7 +10,6 @@ uint8_t ds18b20ReadBit(void);
 void ds18b20WriteByte(uint8_t byte);
 uint8_t ds18b20ReadByte(void);
 
-
 void ds18b20Init() {
     ds18b20Reset();
     ds18b20WriteByte(0xCC);
@@ -18,19 +17,6 @@ void ds18b20Init() {
     ds18b20WriteByte(0x64);
     ds18b20WriteByte(0x00);
     ds18b20WriteByte(0x7F);
-    ds18b20Reset();
-    ds18b20WriteByte(0xCC);
-    ds18b20WriteByte(0xBE);
-    uint8_t temp1 = ds18b20ReadByte();
-    uint8_t temp2 = ds18b20ReadByte();
-    uint8_t temp3 = ds18b20ReadByte();
-    uint8_t temp4 = ds18b20ReadByte();
-    uint8_t temp5 = ds18b20ReadByte();
-    uint8_t temp6 = ds18b20ReadByte();
-    uint8_t temp7 = ds18b20ReadByte();
-    uint8_t temp8 = ds18b20ReadByte();
-    uint8_t temp9 = ds18b20ReadByte();
-    ds18b20Reset();
 }
 
 float ds18b20ReadTemp() {
@@ -44,17 +30,20 @@ float ds18b20ReadTemp() {
     uint8_t temp1 = ds18b20ReadByte();
     uint8_t temp2 = ds18b20ReadByte();
     ds18b20Reset();
-    uint16_t temp = (uint16_t)(temp1 << 8) | (uint16_t)temp2;
-    return temp;
+    uint16_t temp = (uint16_t)(temp2 << 8) | (uint16_t)temp1;
+    if(temp == 0xFFFF) return 200.0;
+    else {
+        return temp/16.0;
+    }
 }
 
 void ds18b20Reset(void) {
     GPIOD->ODR |= (uint8_t)GPIO_PIN_3;
-    ds18b20Delay(1);
+    ds18b20Delay(2);
     GPIOD->ODR &= (uint8_t)(~GPIO_PIN_3);
-    ds18b20Delay(12);
+    ds18b20Delay(120);
     GPIOD->ODR |= (uint8_t)GPIO_PIN_3;
-    ds18b20Delay(1);
+    ds18b20Delay(10);
     while(ds18b20Read() == GPIO_HIGH);
     while(ds18b20Read() == GPIO_LOW);
 }
@@ -80,28 +69,27 @@ uint8_t ds18b20ReadByte(void) {
 
 uint8_t ds18b20ReadBit(void) {
     uint8_t bit;
-    GPIOD->ODR &= (uint8_t)(~GPIO_PIN_3);
-    asm("NOP");
     GPIOD->ODR |= (uint8_t)GPIO_PIN_3;
-    asm("NOP");
-    asm("NOP");
+    ds18b20Delay(1);
+    GPIOD->ODR &= (uint8_t)(~GPIO_PIN_3);
+    int pUs = 2; while(pUs--) asm("NOP");
+    GPIOD->ODR |= (uint8_t)GPIO_PIN_3;
+    pUs = 3; while(pUs--) asm("NOP");
     bit = ((BitStatus)(GPIOD->IDR & (uint8_t)GPIO_PIN_3));
-    int pUs = 3;
-    while(pUs--) asm("NOP");
+    ds18b20Delay(30);
     return bit;
 }
 
 void ds18b20WriteBit(uint8_t bit) {
     GPIOD->ODR |= (uint8_t)GPIO_PIN_3;
-    asm("NOP");
+    ds18b20Delay(1);
     GPIOD->ODR &= (uint8_t)(~GPIO_PIN_3);
-    asm("NOP");
+    ds18b20Delay(1);
     if(bit != 0x00)
         GPIOD->ODR |= (uint8_t)GPIO_PIN_3;
     else if(bit == 0x01)
         GPIOD->ODR &= (uint8_t)~GPIO_PIN_3;
-    int pUs = 15;
-    while(pUs--) asm("NOP");
+    ds18b20Delay(13);
     GPIOD->ODR |= (uint8_t)GPIO_PIN_3;
 }
 
