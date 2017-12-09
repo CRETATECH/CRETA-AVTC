@@ -4,6 +4,16 @@
 # Compiled Object files
 *.slo
 *.lo
+
+*.map
+*.o
+*.xcl
+*.pbd
+*.linf
+*.browse
+*.pbi
+*.out
+STM8\AVTC_Slave\Project\settings\*
 *.o
 *.obj
 
