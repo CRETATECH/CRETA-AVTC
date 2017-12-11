@@ -27,7 +27,7 @@
 /******************************************************************************/
 /* PUBLIC FUNCTION PROTOTYPES */
 /******************************************************************************/
-int buttonInit(uint8_t pButton);
+void buttonInit(uint8_t pButton);
 bool buttonReadPressed(uint8_t pButton);
 uint8_t buttonReadLevel(uint8_t pButton);
 

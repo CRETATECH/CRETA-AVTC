@@ -3,6 +3,8 @@
 
 #include "protocol.h"
 #include "reg.h"
+#include "led.h"
+#include "device.h"
 #include "button.h"
 #include "ds18b20.h"
 #include "ticker.h"

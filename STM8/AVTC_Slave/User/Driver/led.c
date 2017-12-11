@@ -1,5 +1,5 @@
 /*******************************************************************************
-  * @filename   : device.c
+  * @filename   : led.c
   * @author     : HgN
   * @last update: December 11th, 2017
   */
@@ -8,7 +8,7 @@
 /******************************************************************************/
 /* INCLUDE */
 /******************************************************************************/
-#include "device.h"
+#include "led.h"
 #include <stdlib.h>
 
 /******************************************************************************/
@@ -22,18 +22,16 @@
 /******************************************************************************/
 /* PUBLIC VARIABLES */
 /******************************************************************************/
-uint16_t _devicePort[4] = {
-    DEVICE_1_PORT,
-    DEVICE_2_PORT,
-    DEVICE_3_PORT,
-    DEVICE_4_PORT
+uint16_t _ledPort[3] = {
+    LED_1_PORT,
+    LED_2_PORT,
+    LED_3_PORT
 };
 
-uint8_t _devicePin[4] = {
-    DEVICE_1_PIN,
-    DEVICE_2_PIN,
-    DEVICE_3_PIN,
-    DEVICE_4_PIN
+uint8_t _ledPin[3] = {
+    LED_1_PIN,
+    LED_2_PIN,
+    LED_3_PIN
 };
 /******************************************************************************/
 /* LOCAL FUNCTION PROTOTYPES */
@@ -43,36 +41,35 @@ uint8_t _devicePin[4] = {
 /* PUBLIC FUNCTIONS */
 /******************************************************************************/
 /**
- * @brief       Init device
- * @param       device number
+ * @brief       Init led
+ * @param       Led number
  * @reval       None
  */
-void deviceInit(uint8_t pdevice) {
-    uint16_t vPort = _devicePort[pdevice];
-    uint8_t vPin = _devicePin[pdevice];
+void ledInit(uint8_t pLed) {
+    uint16_t vPort = _ledPort[pLed];
+    uint8_t vPin = _ledPin[pLed];
     gpioPinMode(vPort, vPin, GPIO_OUTPUT);
-    gpioWritePin(vPort, vPin, GPIO_HIGH);
 }
 
 /**
- * @brief       Turn device on
- * @param       device number
+ * @brief       Turn led on
+ * @param       Led number
  * @reval       None
  */
-void deviceOn(uint8_t pdevice) {
-    uint16_t vPort = _devicePort[pdevice];
-    uint8_t vPin = _devicePin[pdevice];
+void ledOn(uint8_t pLed) {
+    uint16_t vPort = _ledPort[pLed];
+    uint8_t vPin = _ledPin[pLed];
     gpioWritePin(vPort, vPin, GPIO_LOW);
 }
 
 /**
- * @brief       Turn device off
- * @param       device number
+ * @brief       Turn led off
+ * @param       Led number
  * @reval       None
  */
-void deviceOff(uint8_t pdevice) {
-    uint16_t vPort = _devicePort[pdevice];
-    uint8_t vPin = _devicePin[pdevice];
+void ledOff(uint8_t pLed) {
+    uint16_t vPort = _ledPort[pLed];
+    uint8_t vPin = _ledPin[pLed];
     gpioWritePin(vPort, vPin, GPIO_HIGH);
 }
 /**
@@ -80,8 +77,8 @@ void deviceOff(uint8_t pdevice) {
  * @param       Device number
  * @reval       GPIO_LOW/GPIO_HIGH
  */
-uint8_t deviceRead(uint8_t pdevice) {
-    uint16_t vPort = _devicePort[pdevice];
-    uint8_t vPin = _devicePin[pdevice];
+uint8_t ledRead(uint8_t pLed) {
+    uint16_t vPort = _ledPort[pLed];
+    uint8_t vPin = _ledPin[pLed];
     return gpioReadPin(vPort, vPin);
 }
