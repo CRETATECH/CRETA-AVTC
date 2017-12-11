@@ -7,6 +7,7 @@ void main( void )
     while(1) {
         taskDev2Reg();
         taskSerialCmd();
+        taskReg2Dev();
     }
 }
 

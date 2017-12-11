@@ -24,7 +24,7 @@
 /******************************************************************************/
 /* PUBLIC FUNCTION PROTOTYPES */
 /******************************************************************************/
-int tickerInit(void);
+void tickerInit(void);
 uint32_t tickerMillis(void);
 void tickerDelayMs(uint32_t pMsDelay);
 

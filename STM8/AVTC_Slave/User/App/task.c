@@ -2,33 +2,51 @@
 #include <stdlib.h>
 #include <string.h>
 
+#define SLAVE_RELAY
+
 frame_t frameTx;
 frame_t frameRx;
 
 void taskInit(void) {
+    //! Set clock 16MHz
     CLK_HSICmd(ENABLE);
     CLK_HSIPrescalerConfig(CLK_PRESCALER_HSIDIV1);
     CLK_SYSCLKConfig(CLK_PRESCALER_CPUDIV1);
     CLK_AdjustHSICalibrationValue(CLK_HSITRIMVALUE_0);
 
+    //! Init serial, ticker
     serialInit();
     tickerInit();
     enableInterrupts();
 
-    buttonInit(BUTTON_1);
-    buttonInit(BUTTON_2);
-    buttonInit(BUTTON_3);
-    buttonInit(WATER_SENSOR);
+    //! Init led
+    ledInit(LED_1);
+    ledInit(LED_2);
+    ledInit(LED_3);
 
-    gpioPinMode(DS18B20_PORT, DS18B20_PIN, GPIO_MODE_OUT_OD_LOW_FAST);
+#ifdef SLAVE_SENSOR
     ds18b20Init();
+    buttonInit(WATER_SENSOR);
+#endif
+#ifdef SLAVE_RELAY
+    deviceInit(DEVICE_1);
+    deviceInit(DEVICE_2);
+    deviceInit(DEVICE_3);
+    deviceInit(DEVICE_4);
+#endif
 
+    //! Clear serial frame
     serialClearFrame(&frameTx);
     serialClearFrame(&frameRx);
 
     regInit();
     //! Set sensor slave address 0x02
+#ifdef SLAVE_SENSOR
     regWrite(0x30, 0x02);
+#endif
+#ifdef SLAVE_RELAY
+    regWrite(0x30, 0x01);
+#endif
 }
 
 void taskSerialCmd() {
@@ -66,10 +84,29 @@ void taskSerialCmd() {
 }
 
 void taskReg2Dev(void) {
-
+#ifdef SLAVE_SENSOR
+#endif
+#ifdef SLAVE_RELAY
+    uint8_t count = 0;
+    uint8_t relay[4] = {
+        DEVICE_1,
+        DEVICE_2,
+        DEVICE_3,
+        DEVICE_4
+    };
+    for(count = 0; count < 4; count++) {
+        if(regRead(0x10 + count) == 0x64) {
+            deviceOn(relay[count]);
+        }
+        else if(regRead(0x10 + count) == 0x00) {
+            deviceOff(relay[count]);
+        }
+    }
+#endif
 }
 
 void taskDev2Reg(void) {
+#ifdef SLAVE_SENSOR
     //! Update water sensor
     if(GPIO_HIGH == buttonReadLevel(WATER_SENSOR)) {
         regWrite(0x22, 0x00);
@@ -86,4 +123,26 @@ void taskDev2Reg(void) {
         regWrite(0x20, (uint8_t)(reg_t >> 8));
         regWrite(0x21, (uint8_t)(reg_t >> 0));
     }
+#endif
+#ifdef SLAVE_RELAY
+    //! Update relay status
+    uint8_t count = 0;
+    uint8_t relay[4] = {
+        DEVICE_1,
+        DEVICE_2,
+        DEVICE_3,
+        DEVICE_4
+    };
+    for(count = 0; count < 4; count++) {
+        relay[count] = deviceRead(relay[count]);
+    }
+    for(count = 0; count < 4; count++) {
+        if(relay[count] == GPIO_LOW) {
+            regWrite(0x10 + count, 0x64);
+        }
+        else {
+            regWrite(0x10 + count, 0x00);
+        }
+    }
+#endif
 }

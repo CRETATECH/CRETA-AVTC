@@ -44,11 +44,10 @@ uint8_t _buttonPin[4] = {BUTTON_1_PIN,
  * @retval      EXIT_SUCCESS
  *              EXIT_FAILURE
  */
-int buttonInit(uint8_t pButton) {
+void buttonInit(uint8_t pButton) {
     uint16_t vPort = _buttonPort[pButton];
     uint8_t vPin = _buttonPin[pButton];
     gpioPinMode(vPort, vPin, GPIO_INPUT);
-    return EXIT_SUCCESS;
 }
 
 bool buttonReadPressed(uint8_t pButton) {

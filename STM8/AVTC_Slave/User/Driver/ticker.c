@@ -37,10 +37,9 @@ volatile uint32_t _millis = 0;
  * @retval      EXIT_SUCCESS
  *              EXIT_FAILURE
  */
-int tickerInit(void) {
+void tickerInit(void) {
     timer2Init(62);
     timer2IntEnable();
-    return EXIT_SUCCESS;
 }
 
 /**

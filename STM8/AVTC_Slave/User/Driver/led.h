@@ -1,12 +1,12 @@
 /*******************************************************************************
-  * @filename   : device.h
+  * @filename   : led.h
   * @author     : HgN
   * @last update: December 11th, 2017
   */
 /******************************************************************************/
 
-#ifndef DEVICE_H
-#define DEVICE_H
+#ifndef LED_H
+#define LED_H
 
 /******************************************************************************/
 /* INCLUDE */
@@ -25,9 +25,9 @@
 /******************************************************************************/
 /* PUBLIC FUNCTION PROTOTYPES */
 /******************************************************************************/
-void deviceInit(uint8_t pdevice);
-void deviceOn(uint8_t pdevice);
-void deviceOff(uint8_t pdevice);
-uint8_t deviceRead(uint8_t pdevice);
+void ledInit(uint8_t pLed);
+void ledOn(uint8_t pLed);
+void ledOff(uint8_t pLed);
+uint8_t ledRead(uint8_t pLed);
 
 #endif
