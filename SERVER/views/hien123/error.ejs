@@ -1,0 +1,29 @@
+<html>
+	<head>
+		<title>CRETA</title>
+		<meta name="viewport" content="width=device-width">
+	</head>	
+    <body>
+		<div>
+			<table id = "error">
+			</table>
+		</div>
+	</body>
+    <script src="/socket.io/socket.io.js"></script>
+	<script>
+		tab = document.getElementById("error")
+		row = document.createElement("tr")
+		col1 = document.createElement("th")
+		col2 = document.createElement("th")
+		socket.on('error',function(data){
+			var date = new Date()
+			date = document.createTextNode(date);
+			err	 = document.createTextNode(data);
+			col1.appendChild(date)
+			col2.appendChild(err)
+			row.appendChild(col1)
+			row.appendChild(col2)
+			tab.appendChild(row)
+		})
+	</script>
+</html>
