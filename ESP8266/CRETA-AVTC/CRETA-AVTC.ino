@@ -23,16 +23,17 @@ void mqttConfig(void);
 /*                  MAIN FUNCTION                */
 /*************************************************/
 
-uint8_t cac[6];
 
 
 void setup() {
   hwConfig();
   mqttConfig();
   Timer_Init();
+  protocolFuncStatusInit();
 }
 
 void loop() {
+  stateUpdate();
   stateMachine();
 }
 

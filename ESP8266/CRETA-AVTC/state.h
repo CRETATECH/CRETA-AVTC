@@ -9,5 +9,5 @@
 /*                  FUCTION PROTOTYPE            */
 /*************************************************/
 void stateMachine(void);
-
+void stateUpdate(void);
 #endif /* STATE_H */

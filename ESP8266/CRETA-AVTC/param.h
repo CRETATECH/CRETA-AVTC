@@ -12,6 +12,11 @@ typedef enum {
 
 #define  LED_WIFI_PIN           4
 #define  BUTTON_CONFIG_PIN      0
-//#define  DEBUG
+#define  DEBUG
+
+/*
+ * "001" : parse json
+ * "002" : esp busy
+ */
 
 #endif /* PARAM_H */
