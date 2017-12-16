@@ -30,7 +30,7 @@ var seq = futures.sequence();
 
 var errLog
 var tCtrl = [], tScanInterval;
-var check = [];
+var check = [], devArr = {};
 var devStatus = {};
 var ruleList = 'sRules';
 var history = 'tcpSlave';
@@ -60,9 +60,8 @@ var configureRoute = function () {
         data = JSON.parse(data)
         console.log("#POST ---getHistory---")
         console.log("   " + JSON.stringify(data))
-        var history = function (info) {
-            var list = info;
-            res.send({ DATA: list })
+        var history = function (js) {
+            res.send(js)
         }
         json = getHistory(data, history)
     })
@@ -137,15 +136,11 @@ var configureDB_MQTT = function () {
 
     function conCheck() {
         if (x == 3) {
-            db.query("SELECT * FROM " + listDev, function (err, results) {
-                if (err) throw err;
-                for (var i = 0; i < results.length; i++) {
-                    var user = results[i].PRODUCT + results[i].MACID;
-                    tcp.subscribe(user + '/slave');
-                    ws.subscribe(results[i].MACID + '/master');
-                }
-            })
-            clearInterval(interval)
+            for (const i in devArr) {
+                tcp.subscribe(uID(i,"App") + '/slave');
+                ws.subscribe(i + '/master');
+                clearInterval(interval)
+            }
         }
     }
     var interval = setInterval(conCheck, 50)
@@ -157,36 +152,33 @@ var configureDB_MQTT = function () {
 
         switch (topic.toString()) {
             case 'topicTest':
-                var dev = uSplit(msg.toString())
-                db.query("SELECT * FROM " + listDev + " WHERE MACID = " + mysql.escape(dev.MACID),
-                    function (err, results) {
-                        if (err) throw err;
-                        if (results[0] == null) {
-                            values = [
-                                [
-                                    dev.PRODUCT,
-                                    dev.MACID
-                                ]
-                            ]
+                var dev = uID(msg.toString(), "Dev")
+                // db.query("SELECT * FROM " + listDev + " WHERE ID = " + mysql.escape(dev),
+                //     function (err, results) {
+                //         if (err) throw err;
 
-                            db.query("INSERT INTO " + listDev + " (PRODUCT,MACID) VALUES ?", [values],
-                                function (err, results) {
-                                    if (err) throw err;
-                                }
-                            )
-
-                            tcp.subscribe(dev.PRODUCT + dev.MACID + '/slave')
-                            ws.subscribe(dev.MACID + '/master')
+                if (dev == null) {
+                    values = [
+                        [
+                            dev.PRODUCT,
+                            dev.ID
+                        ]
+                    ]
+                    db.query("INSERT INTO " + listDev + " (PRODUCT,ID) VALUES ?", [values],
+                        function (err, results) {
+                            if (err) throw err;
                         }
-                    }
-                )
+                    )
+                    tcp.subscribe(uID(dev, "App") + '/slave')
+                    ws.subscribe(dev + '/master')
+                }
                 break;
 
             default:
                 var msg = JSON.parse(msg)
 
                 //Send Info to App
-                var wsTopic = uSplit(topic.toString()).MACID
+                var wsTopic = uID(topic.toString(), "Dev")
                 var js = {
                     ID: msg.USER,
                     FUNC: msg.FUNC,
@@ -194,12 +186,13 @@ var configureDB_MQTT = function () {
                     DATA: msg.DATA
                 }
 
-                js.ID = uSplit(msg.USER).MACID
+                js.ID = uID(msg.USER, "Dev")
 
                 msg.FUNC == "001" ? js.FUNC = "Ctrl" :
                     msg.FUNC == "002" ? js.FUNC = "Data" :
                         msg.FUNC == "003" ? js.FUNC = "Error" :
-                            null
+                            msg.FUNC == "101" ? js.FUNC = "Timer" :
+                                null
 
                 var addr = msg.ADDR.split("")
                 var prod = addr[0] + addr[1]
@@ -214,24 +207,9 @@ var configureDB_MQTT = function () {
                     js.DATA = msg.DATA
 
                 ws.publish(wsTopic, JSON.stringify(js))
+                upHis(msg,history)                
                 break;
 
-                //Update History
-                var date = new Date();
-                var values = [
-                    [
-                        date,
-                        msg.USER,
-                        msg.ADDR,
-                        msg.FUNC,
-                        msg.DATA
-                    ]
-                ]
-                db.query("INSERT INTO " + history + " (TIME,MACID,ADDR,FUNC,DATA) VALUES ?", [values],
-                    function (err, results) {
-                        if (err) throw err;
-                    }
-                )
         }
     })
 
@@ -250,7 +228,7 @@ var configureDB_MQTT = function () {
         msg.FUNC == "Ctrl" ? js.FUNC = "001" :
             msg.FUNC == "Data" ? js.FUNC = "002" :
                 msg.FUNC == "Error" ? js.FUNC = "003" :
-                    msg.FUNC == "" ? js.FUNC = "101" :
+                    msg.FUNC == "Timer" ? js.FUNC = "101" :
                         null
 
         var addr = msg.ADDR.split("_")
@@ -265,32 +243,11 @@ var configureDB_MQTT = function () {
         msg.DATA == "100" ? js.DATA = "1" :
             null
 
-        db.query("SELECT * FROM " + listDev + " WHERE MACID = " + mysql.escape(msg.ID),
-            function (err, results) {
-                if (err) throw err;
-                js.USER = results[0].PRODUCT + results[0].MACID
-                var tcpTopic = js.USER + "/master"
-                tcp.publish(tcpTopic, JSON.stringify(js)); 
-                               
-            }
-        )
+        js.USER = uID(msg.ID, "App")
+        var tcpTopic = js.USER + "/master"
+        tcp.publish(tcpTopic, JSON.stringify(js));
 
-        //Update History
-        var date = new Date();
-        var values = [
-            [
-                date,
-                msg.ID,
-                msg.ADDR,
-                msg.FUNC,
-                msg.DATA
-            ]
-        ]
-        db.query("INSERT INTO " + wsHistory + " (TIME,MACID,ADDR,FUNC,DATA) VALUES ?", [values],
-            function (err, results) {
-                if (err) throw err;
-            }
-        )
+        upHis(msg,wsHistory)
 
     });
 }
@@ -298,7 +255,7 @@ var configureDB_MQTT = function () {
 var configureSocket = function () {
     io.on('connection', function (socket) {
         //Whenever someone disconnects this piece of code executed
-        function errLog(e){
+        function errLog(e) {
             socket.emit('error', e)
         }
     });
@@ -311,20 +268,23 @@ var configurePublic = function () {
 
 //Time control
 var timeControl = function () {
+    updArr();
     uptCtrl();
     // uptCheck();
-    setInterval(uptCtrl, 1800000)
-    setInterval(tScan, 500)
+    setInterval(function () {
+        updArr();
+        var date = new Date();
+        var x = date.getHours() + date.getMinutes() + date.getSeconds
+        if (x == 0) {
+            uptCtrl();
+        }
+        tScan();
+    }, 500)
 }
 
 //Set Rules;
 function setRules(data, OKAY, ERROR) {
-    db.query('DELETE FROM ' + ruleList + ' WHERE ADDR = ' + mysql.escape(data.ADDR),
-        function (err, result) {
-            if (err) throw err;
-        }
-    )
-    var mac = "CSR" + data.MACID;
+    var id = uID(data.ID, "App");
     var acc = data.ACC;
     var addr = data.ADDR;
     var begin = JSON.stringify(data.BEGIN);
@@ -334,11 +294,12 @@ function setRules(data, OKAY, ERROR) {
     var du = JSON.stringify(data.DU)
     var func = data.FUNC
     var values = [
-        [mac, acc, addr, begin, mode, state, time, du, func]
+        [id, acc, addr, begin, mode, state, time, du, func]
     ]
+
     var addRules = function (val) {
         console.log('# Adding new rules')
-        db.query('INSERT INTO ' + ruleList + ' (MACID,ACC,ADDR,BEGIN,MODE,STATE,TIME,DU,FUNC) VALUES ?',
+        db.query('INSERT INTO ' + ruleList + ' (ID,ACC,ADDR,BEGIN,MODE,STATE,TIME,DU,FUNC) VALUES ?',
             [val], function (err, result) {
                 if (err) {
                     ERROR();
@@ -350,12 +311,12 @@ function setRules(data, OKAY, ERROR) {
             }
         )
     }
-    db.query('SELECT * FROM ' + ruleList + ' WHERE MACID = ' + mysql.escape(data.MACID),
+    db.query('SELECT * FROM ' + ruleList + ' WHERE ID = ' + mysql.escape(data.ID),
         function (err, results) {
             if (err) throw err;
             var findValue = -1
             findValue = _.findIndex(results, function (value) {
-                return value.MACID == data.MACID
+                return value.ID == data.ID
                     && value.ACC == data.ACC
                     && value.ADDR == data.ADDR
                     && value.BEGIN == data.BEGIN
@@ -377,9 +338,9 @@ function setRules(data, OKAY, ERROR) {
 // Get Rules
 function getRules(data, callback) {
     var list = [];
-    data.MACID = "CSR" + data.MACID
-    console.log("getRules: " + data.MACID)
-    db.query("SELECT * FROM " + ruleList + " WHERE MACID =" + mysql.escape(data.MACID),
+    data.ID = "CSR" + data.ID
+    console.log("getRules: " + data.ID)
+    db.query("SELECT * FROM " + ruleList + " WHERE ID =" + mysql.escape(data.ID),
         function (err, results) {
             for (var i = 0; i < results.length; i++) {
                 var info = results[i];
@@ -397,34 +358,70 @@ function getRules(data, callback) {
 // Get History
 function getHistory(data, callback) {
     var list = [];
-    var macid = data.MACID
-    var addr = data.ADDR
+    var js = {
+        STATUS: "OK",
+        DATA: list
+    }
+    id = uID(data.ID, "App")
+    var addr = data.ADDR.split("_")
+    var prod = addr[0]
+    var ordr = addr[1]
+    prod == "RL" ? data.ADDR = "01" :
+        prod == "TE" ? data.ADDR = "02" :
+            prod == "WL" ? data.ADDR = "04" :
+                null
+    data.ADDR += ordr
     var values = [
-        [macid, addr]
+        [id, data.ADDR]
     ]
-    db.query("SELECT * FROM " + history + " WHERE (MACID,ADDR) = ?", [values],
+    db.query("SELECT * FROM " + history + " WHERE (ID,ADDR) = ?", [values],
         function (err, results) {
-            for (var i = 0; i < results.length; i++) {
-                var re = results[i];
-                var key = re.ADDR.split("")[0] + re.ADDR.split("")[1]
-                var json = {
-                    TIME: re.TIME,
-                    MACID: re.MACID,
-                    DATA: re.DATA
-                };
-                switch (key) {
-                    case "01":
-                        re.DATA == "0" ? json.DATA = "Off" :
-                        json.DATA = "On"
-                    case "02":
-                        break;
-                    case "04":
-                        re.DATA == "0" ? json.DATA = "LOW" :
-                        json.DATA = "HIGH"
+            if (err) throw err;
+            if (results[0] == null) {
+                js.STATUS = "ERROR"
+                callback(js)
+            } else {
+                for (var i = 0; i < results.length; i++) {
+                    var re = results[i];
+                    var json = {
+                        TIME:{
+                            "HOUR":re.HOUR.toString(),
+                            "MINUTES":re.MINUTES.toString(),
+                            "SECOND":re.SECOND.toString()
+                        },
+                        DATE:{
+                            "DAY":re.DAY.toString(),
+                            "MONTH":re.MONTH.toString(),
+                            "YEAR":re.YEAR.toString()
+                        },
+                        ID:re.ID,
+                        ADDR:re.ADDR,
+                        FUNC:re.FUNC,
+                        DATA:re.DATA
+                    }
+                    re.ID = uID(re.ID, "Dev")
+
+                    var addr = re.ADDR.split("")
+                    var prod = addr[0] + addr[1]
+                    var ordr = addr[2] + addr[3]
+                    prod == "01" ? re.ADDR = "RL_" :
+                        prod == "02" ? re.ADDR = "TE_" :
+                            prod == "04" ? re.ADDR = "WL_" :
+                                null
+                    re.ADDR += ordr
+
+                    re.FUNC == "001" ? re.FUNC = "Ctrl" :
+                        re.FUNC == "002" ? re.FUNC = "Data" :
+                            re.FUNC == "003" ? re.FUNC = "Error" :
+                                re.FUNC == "101" ? re.FUNC = "Timer" :
+                                    null
+
+                    re.DATA == '1' ? re.DATA = "100" :
+                        null
+                    list.push(json);
                 }
-                list.push(json);
+                callback(js);
             }
-            callback(list);
         }
     )
 
@@ -434,7 +431,7 @@ function getHistory(data, callback) {
 function deleteRules(data, OK, ER) {
     values = [
         [
-            data.MACID,
+            data.ID,
             data.ACC,
             data.ADDR,
             data.BEGIN,
@@ -444,7 +441,7 @@ function deleteRules(data, OK, ER) {
             data.DU
         ]
     ]
-    db.query("DELETE FROM " + ruleList + " WHERE (MACID,ACC,ADDR,BEGIN,MODE,STATE,TIME,DU) = ?",
+    db.query("DELETE FROM " + ruleList + " WHERE (ID,ACC,ADDR,BEGIN,MODE,STATE,TIME,DU) = ?",
         [values], function (err, results) {
             if (err) { ERR() }
             else { OK() }
@@ -452,53 +449,105 @@ function deleteRules(data, OK, ER) {
     )
 }
 
+//UPDATE DEVICE LIST
+function updArr() {
+    db.query("SELECT * FROM " + listDev, function (err, results) {
+        if (err) throw err;
+        for (let i = 0; i < results.length; i++) {
+            devArr[results[i].ID] = results[i].PRODUCT + results[i].ID
+        }
+    })
+}
+
 //UPDATE TIME CONTROL ARRAY
 function uptCtrl() {
     tCtrl = []
     db.query('SELECT * FROM ' + ruleList, function (err, results) { //Query timeRules
         if (err) throw err;
-        var i
-        for (i = 0; i < results.length; i++) {
+        var date = new Date();
+        var today = new Date(date.getFullYear(), date.getMonth(), date.getDate() + 1)
+        today = today.getTime()
+        // var i
+        for (let i = 0; i < results.length; i++) {
             var re = results[i]
             var BEG = JSON.parse(re.BEGIN)
             var MOD = JSON.parse(re.MODE)
             var TI = JSON.parse(re.TIME)
             var DU = JSON.parse(re.DU)
-
-            var ru = {
-                MACID: re.MACID,
-                ACC: re.ACC,
+            let ruB = {
+                ID: re.ID,
                 ADDR: re.ADDR,
-                MODE: MOD.KIND,
-                bDAY: "",
-                bTIME: "",
                 STATE: re.STATE,
-                eTIME: "",
-                REP: "",
-                FUNC: re.FUNC
+                FUNC: re.FUNC,
+                CHECK: "0"
             }
+
+            re.FUNC == "Ctrl" ? ruB.FUNC = "001" :
+                re.FUNC == "Data" ? ruB.FUNC = "002" :
+                    re.FUNC == "Error" ? ruB.FUNC = "003" :
+                        re.FUNC == "Timer" ? ruB.FUNC = "101" :
+                            null
 
             var addr = re.ADDR.split("_")
             var prod = addr[0]
             var ordr = addr[1]
-            prod == "RL" ? ru.ADDR = "01" :
-                prod == "TE" ? ru.ADDR = "02" :
-                    prod == "WL" ? ru.ADDR = "04" :
+            prod == "RL" ? ruB.ADDR = "01" :
+                prod == "TE" ? ruB.ADDR = "02" :
+                    prod == "WL" ? ruB.ADDR = "04" :
                         null
-            ru.ADDR += ordr
+            ruB.ADDR += ordr
+
+            re.STATE == "100" ? ruB.STATE = "1" :
+                null
+
+            let ruE = {
+                ID: ruB.ID,
+                ADDR: ruB.ADDR,
+                STATE: "",
+                FUNC: ruB.FUNC,
+                CHECK: "0"
+            }
+
+            ruB.STATE == "1" ? ruE.STATE = "0" :
+                ruE.STATE = "1";
 
             // "X" DAYS MODE
-            if (MOD.KIND == '1') {
-                ru.bDAY = new Date(BEG.YEAR, BEG.MONTH - 1, BEG.DATE)
-                ru.bDAY = ru.bDAY.getTime()
-                ru.bTIME = (parseInt(TI.HOUR) * 60 + parseInt(TI.MINUTES)) * 60000
-                ru.eTIME = ru.bTIME + (parseInt(DU.HOUR) * 60 + parseInt(DU.MINUTES)) * 60000
-                ru.REP = parseInt(MOD.DATA) * 24 * 60 * 60 * 1000
+            if (MOD.KIND == "1") {
+                var bDay = new Date(BEG.YEAR, BEG.MONTH - 1, BEG.DATE + 1);
+                bDay = bDay.getTime();
+                var rep = 86400000 * parseInt(MOD.DATA);
+                (today - bDay) % rep == 0 ? x = 1 :
+                    x = 0;
+            } else if (MOD.KIND == "2") {
+
             }
-            tCtrl.push(ru)
+
+            if (x = 1) {
+                var beg, end
+                TI.HOUR == "0" ? beg = TI.MINUTES :
+                    beg = TI.HOUR + zero(TI.MINUTES)
+                var hr = parseInt(TI.HOUR) + parseInt(DU.HOUR)
+                var min = parseInt(TI.MINUTES) + parseInt(DU.MINUTES)
+                if (min > 59) {
+                    min = 60 - min;
+                    hr++;
+                    if (hr > 23) {
+                        hr = 24 - hr;
+                    }
+                }
+                hr == "0" ? end = min.toString() :
+                    end = hr.toString() + zero(min.toString())
+                tCtrl[beg] = ruB
+                tCtrl[end] = ruE
+            }
+
         }
         console.log("# Rules:")
-        console.log(tCtrl)
+        for (let i = 0; i < tCtrl.length; i++) {
+            if (tCtrl[i] != null) {
+                console.log(i, tCtrl[i])
+            }
+        }
     })
 }
 
@@ -506,72 +555,60 @@ function uptCtrl() {
 function tScan() {
 
     var date = new Date();
-    var today = new Date(date.getFullYear(), date.getMonth() + 1, date.getDate())
-    today = today.getTime()
-    var now = (date.getHours() * 60 + date.getMinutes()) * 60000
-    for (var i = 0; i < tCtrl.length; i++) {
-        var ru = tCtrl[i]
-        switch (ru.STATE) {
-            case "100":
-                ru.STATE = "1"
-                break;
-        }
-        var js = {
-            USER: ru.MACID,
-            FUNC: ru.FUNC,
-            ADDR: ru.ADDR,
-            DATA: ru.STATE
-        }
-        var topic = js.USER + "/master"
+    var hr = date.getHours()
+    var min = date.getMinutes()
+    var now;
+    hr == 0 ? now = min.toString() :
+        now = hr.toString() + min.toString();
+    let ru = tCtrl[now]
+    let i
 
-        //Check Mode
-        switch (ru.MODE) {
-            case "1":
-                if ((today - ru.bDAY) % ru.REP == 0) {
-                    tCompare();
-                }
+    if (ru == null) {
+        for (i = parseInt(now); i > -1; i--) {
+            if (tCtrl[i] != null) {
+                ru = tCtrl[i]
                 break;
-            case "2":
-
-                break;
+            };
+            i == 0 ? i = 2359 :
+                null;
         }
+    }
 
-        // Time compare
-        function tCompare() {
-            if (now < ru.bTIME) {
-                check[i] = 0;
-            }
-            if (now >= ru.bTIME && now < ru.eTIME && check[i] != 1) {
-                console.log("# TI_CONTROL 1: " + date)
-                console.log("- Topic: " + topic)
-                console.log("- Frame: " + JSON.stringify(js))
-                tcpPublish(topic, js)
-                check[i] = 1
-            }
-            if (now >= ru.eTIME && check[i] != 2) {
-                if (js.DATA == '1') {
-                    js.DATA = '0'
-                } else { js.DATA = '1' }
-                console.log("# TI_CONTROL 2: " + date)
-                console.log("- Topic: " + topic)
-                console.log("- Frame: " + JSON.stringify(js))
-                tcpPublish(topic, js)
-                check[i] = 2
-            }
-        }
+    if (ru.CHECK != "1") {
+        timeFire(ru)
+        tCtrl[i]["CHECK"] = "1";
     }
 }
 
-//TCP Publish
+function timeFire(ru) {
+    var date = new Date()
+    var topic = ru.ID + "/master"
+    var js = {
+        USER: ru.ID,
+        FUNC: ru.FUNC,
+        ADDR: ru.ADDR,
+        DATA: ru.STATE
+    }
+    tcpPublish(topic, js)
+    console.log("# TI_CONTROL :", date)
+    console.log("- Topic: ", topic)
+    console.log("- Frame: ", JSON.stringify(js))
+}
+// TCP Publish
 function tcpPublish(topic, js) {
-    var x = 0;
+    // var x = 0;
     var pubInterval = setInterval(function () {
         tcp.publish(topic, JSON.stringify(js))
-        if (x == 1) {
-            clearInterval(pubInterval)
-        }
-        x++;
-    }, 500)
+        // if (x == 1) {
+        //     clearInterval(pubInterval)
+        // }
+        // x++;
+        tcp.on("message", function (t, msg) {
+            if (t == topic) {
+                clearInterval(pubInterval);
+            }
+        });
+    }, 2000)
 }
 
 // Zero-int
@@ -585,21 +622,44 @@ function zero(i) {
 }
 
 // Split device's name
-function uSplit(x) {
-    var c = x.split("");
-    var js = {
-        PRODUCT: "",
-        MACID: ""
-    };
-
-    for (let i = 0; i < c.length; i++) {
-        if (c[i] == c[i].toLowerCase()) {
-            js.MACID += c[i]
-        } else {
-            js.PRODUCT += c[i]
+function uID(x, src) {
+    var msg = ""
+    if (src == "App") {
+        msg = devArr[x]
+    } else if (src == "Dev") {
+        var c = x.split("");
+        for (let i = 0; i < c.length; i++) {
+            if (c[i] == c[i].toLowerCase()) {
+                msg += c[i]
+            }
         }
-    };
-    return (js);
+    }
+    return (msg);
+}
+
+//Update History
+function upHis(msg,hist){
+    var date = new Date();
+    var hr = date.getHours()
+    var min = date.getMinutes()
+    var sec = date.getSeconds()
+    var year = date.getFullYear()
+    var month = date.getMonth() + 1
+    var day = date.getDate()
+    var values = [
+        [
+            year,month,day,hr,min,sec,
+            msg.USER,
+            msg.ADDR,
+            msg.FUNC,
+            msg.DATA
+        ]
+    ]
+    db.query("INSERT INTO " + hist + " (YEAR,MONTH,DAY,HOUR,MINUTES,SECOND,ID,ADDR,FUNC,DATA) VALUES ?", [values],
+        function (err, results) {
+            if (err) throw err;
+        }
+    )
 }
 
 exports.start = function () {
